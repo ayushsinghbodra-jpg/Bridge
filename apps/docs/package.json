@@ -1,0 +1,12 @@
+{
+  "name": "@bridge/docs",
+  "version": "1.0.0",
+  "description": "Bridge Discord Clone - Documentation",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Documentation only - no dev server'",
+    "build": "echo 'Documentation only - no build'",
+    "type-check": "echo 'Documentation only'"
+  },
+  "devDependencies": {}
+}
