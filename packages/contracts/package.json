@@ -1,12 +1,13 @@
 {
-  "name": "@bridge/types",
+  "name": "@bridge/contracts",
   "version": "1.0.0",
-  "description": "Bridge - Shared TypeScript Types",
+  "description": "Bridge - Application Constants",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
