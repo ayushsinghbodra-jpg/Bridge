@@ -1,7 +1,5 @@
 {
   "name": "bridge",
-  "version": "1.0.0",
-  "description": "Discord Clone - Monorepo",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -16,6 +14,9 @@
   },
   "devDependencies": {
     "turbo": "^1.10.0",
-    "typescript": "^5.0.0"
-  }
+    "typescript": "^5.0.0",
+    "eslint": "^9",
+    "prettier": "^3"
+  },
+  "packageManager": "npm@10.8.0"
 }
