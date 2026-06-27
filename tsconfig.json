@@ -15,7 +15,6 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@bridge/types": ["packages/types/src"],
