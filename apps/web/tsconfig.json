@@ -12,6 +12,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "index.html"],
+  "include": ["next-env.d.ts", "src/**/*", "index.html"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,6 +1,8 @@
+"use client";
+
 import useAuthStore from "@/store/authStore";
-import {login as loginServices } from "@/services/api/auth.service";
-import {saveToken } from "@/services/storage/authStorage";
+import { login as loginServices } from "@/services/api/auth.service";
+import { saveToken } from "@/services/storage/authStorage";
 
 
 const useAuth = ()=>{
