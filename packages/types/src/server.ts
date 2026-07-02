@@ -1,4 +1,4 @@
-export interface server{
+export interface Server{
     id: string;
     name: string;
     ownerId: string;

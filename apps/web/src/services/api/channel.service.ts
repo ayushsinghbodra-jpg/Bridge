@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
-
-export const getChannels = async (serverId : string)=>{
-    const response = await  api.get(`/servers/${serverId}/channels`);
+import { Channel } from "@bridge/types";
+export const getChannels = async (serverId : string): Promise<Channel[]>=>{
+    const response = await  api.get<Channel[]>(`/servers/${serverId}/channels`);
     return response.data;
 };

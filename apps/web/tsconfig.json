@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "rootDir": "./src",
+    "rootDir": "../../",
     "jsx": "react-jsx",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
@@ -9,7 +9,19 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@bridge/types": ["../../packages/types/src"],
+      "@bridge/types/*": ["../../packages/types/src/*"],
+      "@bridge/ui": ["../../packages/ui/src"],
+      "@bridge/ui/*": ["../../packages/ui/src/*"],
+      "@bridge/utils": ["../../packages/utils/src"],
+      "@bridge/utils/*": ["../../packages/utils/src/*"],
+      "@bridge/config": ["../../packages/config/src"],
+      "@bridge/config/*": ["../../packages/config/src/*"],
+      "@bridge/logger": ["../../packages/logger/src"],
+      "@bridge/logger/*": ["../../packages/logger/src/*"],
+      "@bridge/lib": ["../../packages/lib/src"],
+      "@bridge/lib/*": ["../../packages/lib/src/*"],
     }
   },
   "include": ["next-env.d.ts", "src/**/*", "index.html"],

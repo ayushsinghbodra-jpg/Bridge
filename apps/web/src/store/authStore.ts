@@ -1,10 +1,5 @@
 import { create } from "zustand";
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-}
+import { User } from "@bridge/types";
 
 interface AuthState {
   user: User | null;

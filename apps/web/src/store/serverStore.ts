@@ -1,9 +1,5 @@
 import { create } from "zustand";
-
-export interface Server {
-  id: string;
-  name: string;
-}
+import { Server } from "@bridge/types"; 
 
 interface ServerState {
   servers: Server[];

@@ -1,11 +1,6 @@
 import { create } from "zustand";
+import { Message } from "@bridge/types";
 
-interface Message {
-  id: string;
-  userId: string;
-  content: string;
-  createdAt: string;
-}
 
 interface MessageState {
   messages: Message[];

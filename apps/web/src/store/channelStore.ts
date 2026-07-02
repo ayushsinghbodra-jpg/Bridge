@@ -1,10 +1,5 @@
 import { create } from "zustand";
-
-interface Channel {
-  id: string;
-  name: string;
-  type: "text" | "voice";
-}
+import { Channel } from "@bridge/types";
 
 interface ChannelState {
   channels: Channel[];
