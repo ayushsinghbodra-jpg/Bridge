@@ -1,14 +1,17 @@
-const TOKEN_KEY ="bridgr_token";
+const TOKEN_KEY ="bridge_token";
 
 export const saveToken = (token : string )=>{
-    localStorage.stemItem(TOKEN_KEY,token);
+    if(typeof window === "undefined") return;
+    localStorage.setItem(TOKEN_KEY,token);
 };
 
 export const getToken=()=>{
+    if(typeof window === "undefined") return;
     return localStorage.getItem(TOKEN_KEY);
 };
 
 export const removeToken =() =>{
-    localStorage.remove(TOKEN_KEY);
+    if(typeof window === "undefined") return;
+    localStorage.removeItem(TOKEN_KEY);
 };
 
