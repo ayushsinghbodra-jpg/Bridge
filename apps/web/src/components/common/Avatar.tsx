@@ -28,4 +28,13 @@ const Avatar : React.FC<AvatarProps> = ({
             />
         );
     }
+    return (
+        <div className={
+            `rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold ${sizeClasses[size]}`
+        }>
+            {name ? name.charAt(0).toUpperCase() : "?"}
+        </div>
+    )
 }
+
+export default Avatar;
