@@ -9,6 +9,10 @@ interface MessageItemProps {
 const MessageItem = ({
   message,
 }: MessageItemProps) => {
+  const createdAtLabel = message.createdAt
+    ? new Date(message.createdAt).toLocaleTimeString()
+    : "—";
+
   return (
     <div className="p-3 border-b border-gray-700">
       <div className="flex gap-2 items-center">
@@ -17,7 +21,7 @@ const MessageItem = ({
         </span>
 
         <span className="text-xs text-gray-400">
-          {new Date(message.createdAt).toLocaleTimeString()}
+          {createdAtLabel}
         </span>
       </div>
 

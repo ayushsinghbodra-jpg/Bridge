@@ -1,6 +1,6 @@
 "use client";
 
-import { Channel } from "../types/channel.types";
+import type { Channel } from "@bridge/types";
 
 interface ChannelItemProps {
   channel: Channel;

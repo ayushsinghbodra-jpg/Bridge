@@ -14,10 +14,12 @@ const MessageInput = () => {
 
     const newMessage = {
       id: Date.now().toString(),
+      channelId: "general",
       userId: "temp-user",
       username: "Ayush",
       content,
       createdAt: new Date().toISOString(),
+      role: "member" as const,
     };
 
     addMessage(newMessage);

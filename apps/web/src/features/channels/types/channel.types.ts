@@ -1,5 +1,1 @@
-export interface Channel {
-  id: string;
-  name: string;
-  type: "text" | "voice";
-}
+export type { Channel } from "@bridge/types";
