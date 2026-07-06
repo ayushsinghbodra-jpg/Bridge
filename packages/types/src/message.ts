@@ -3,5 +3,6 @@ export interface Message {
   channelId: string;
   userId: string;
   content: string;
-  role: "owner" | "admin" | "moderator" | "member"; 
+  role: "owner" | "admin" | "moderator" | "member";
+  createdAt: string;
 }
