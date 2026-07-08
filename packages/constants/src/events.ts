@@ -10,4 +10,4 @@ export const SOCKET_EVENTS={
 
     USER_TYPING : "user_typing",
     STOP_TYPING : "stop_typing",
-}as const;
+}as const; 

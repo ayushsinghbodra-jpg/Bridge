@@ -3,16 +3,24 @@
   "version": "1.0.0",
   "description": "Bridge - Logging Utility",
   "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
-    "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "build": "tsc -b",
+    "type-check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@bridge/constants": "*"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.9.3"
   }
 }

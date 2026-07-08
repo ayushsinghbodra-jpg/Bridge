@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import api from "@/lib/api";
 
 export const getMessage = async (channelId : string)=>{
     const response =  await api.get(`/channels/${channelId}/messages`);

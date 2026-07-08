@@ -1,7 +1,9 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "../../",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "composite": true,
     "jsx": "react-jsx",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
@@ -9,21 +11,19 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["src/*"],
-      "@bridge/types": ["../../packages/types/src"],
-      "@bridge/types/*": ["../../packages/types/src/*"],
-      "@bridge/ui": ["../../packages/ui/src"],
-      "@bridge/ui/*": ["../../packages/ui/src/*"],
-      "@bridge/utils": ["../../packages/utils/src"],
-      "@bridge/utils/*": ["../../packages/utils/src/*"],
-      "@bridge/config": ["../../packages/config/src"],
-      "@bridge/config/*": ["../../packages/config/src/*"],
-      "@bridge/logger": ["../../packages/logger/src"],
-      "@bridge/logger/*": ["../../packages/logger/src/*"],
-      "@bridge/lib": ["../../packages/lib/src"],
-      "@bridge/lib/*": ["../../packages/lib/src/*"],
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "src/**/*", "index.html"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "next-env.d.ts"],
+  "exclude": ["node_modules", "dist", "build", ".next", ".cache"],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/contracts" },
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/constants" },
+    { "path": "../../packages/logger" },
+    { "path": "../../packages/config" },
+    { "path": "../../packages/analytics" }
+  ]
 }

@@ -1,8 +1,25 @@
-export interface Message {
+export interface MessageAuthor {
+  id:string;
+  username : string;
+  displayname : string | null ;
+  avatarUrl : string | null;
+  role: "owner" | "admin" | "moderator" | "member";
+
+}
+
+export interface MessageResponse {
   id: string;
   channelId: string;
-  userId: string;
+  userId: MessageAuthor;
   content: string;
-  role: "owner" | "admin" | "moderator" | "member";
+  editedAt : Date;
+  deleted : boolean;
   createdAt: string;
+}
+
+
+
+export interface messagePage {
+  message : MessageResponse[];
+  nextCursor : string | null;
 }

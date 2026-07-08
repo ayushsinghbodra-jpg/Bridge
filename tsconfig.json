@@ -1,38 +1,17 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
-    "paths": {
-      "@/*": ["apps/web/src/*"],
-      "@bridge/types": ["packages/types/src"],
-      "@bridge/types/*": ["packages/types/src/*"],
-      "@bridge/ui": ["packages/ui/src"],
-      "@bridge/ui/*": ["packages/ui/src/*"],
-      "@bridge/utils": ["packages/utils/src"],
-      "@bridge/utils/*": ["packages/utils/src/*"],
-      "@bridge/config": ["packages/config/src"],
-      "@bridge/config/*": ["packages/config/src/*"],
-      "@bridge/constants": ["packages/constants/src"],
-      "@bridge/constants/*": ["packages/constants/src/*"],
-      "@bridge/logger": ["packages/logger/src"],
-      "@bridge/logger/*": ["packages/logger/src/*"]
-    }
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "build", ".next"]
+  "files": [],
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/contracts" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/constants" },
+    { "path": "./packages/logger" },
+    { "path": "./packages/config" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/analytics" },
+    { "path": "./apps/server" },
+    { "path": "./apps/worker" },
+    { "path": "./apps/admin" },
+    { "path": "./apps/web" }
+  ]
 }

@@ -14,7 +14,9 @@ node_modules/
 dist/
 build/
 .next/
+.next-cache/
 out/
+.cache/
 *.tsbuildinfo
 
 # IDE and editor

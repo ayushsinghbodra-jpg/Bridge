@@ -12,7 +12,6 @@
     "lint": "eslint src/**/*.{ts,tsx}"
   },
   "dependencies": {
-    "@bridge/lib": "*",
     "@bridge/types": "*",
     "@bridge/ui": "*",
     "@bridge/utils": "*",
