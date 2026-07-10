@@ -1,28 +1,23 @@
 import { create } from "zustand";
+import { Socket} from "socket.io-client";
+
 
 interface SocketState {
-  socket: WebSocket | null;
-  isConnected: boolean;
+  socket : Socket | null;
+  isConnected : boolean ;
 
-  connect: (socket: WebSocket) => void;
-  disconnect: () => void;
+  setSocket : (socket : Socket) => void;
+  setConnected : (isConnedted : boolean)=> void;
+  reset : () => void;
 }
 
 const useSocketStore = create<SocketState>((set) => ({
-  socket: null,
-  isConnected: false,
+  socket : null ,
+  isConnected : false,
 
-  connect: (socket) =>
-    set({
-      socket,
-      isConnected: true,
-    }),
-
-  disconnect: () =>
-    set({
-      socket: null,
-      isConnected: false,
-    }),
+  setSocket:(socket) => set({socket}),
+  setConnected: (isConnected)=> set({isConnected}),
+  reset: () =>set({socket:null, isConnected : false}),
 }));
 
 export default useSocketStore;

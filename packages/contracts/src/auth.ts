@@ -56,7 +56,7 @@ export type RequestPasswordResetDto = z.infer<typeof requestPasswordResetSchema>
 export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
 
 export interface AuthTokens {
-    acessTokens : string,
+    accessTokens : string,
     refreshTokens : string,
     expiresIn : number,
 }
