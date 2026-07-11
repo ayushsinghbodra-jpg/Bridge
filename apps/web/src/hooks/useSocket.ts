@@ -5,7 +5,7 @@ import { getSocket, disconnectSocket } from "@/services/websocket/socket";
 import { SOCKET_EVENTS } from "@/services/websocket/socketEvents";
 import useSocketStore from "@/store/socketStore";
 import useMessageStore from "@/store/messageStore";
-import  useAuth  from "@/hooks/useAuth";
+import useAuth from "@/hooks/useAuth";
 import type { Message } from "@bridge/types";
 
 const useSocket = () => {

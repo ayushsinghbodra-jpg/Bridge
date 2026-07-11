@@ -1,35 +1,37 @@
-import { io , Socket} from "socket.io-client";
-import {getAccessToken} from "@/services/storage/authStorage";
+import { io, Socket } from "socket.io-client";
+import { getAccessToken } from "@/services/storage/authStorage";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? "https://localhost:4000";
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
 
-let socket : Socket | null = null;
+let socket: Socket | null = null;
 
-export function getSocket() : Socket {
-    if(socket) return socket;
+export function getSocket(): Socket {
+  if (socket) return socket;
 
-    const token = getAccessToken();
+  const token = getAccessToken();
 
-    socket = io(`${SOCKET_URL}/chat`, {
-        auth : {token},
-        transports : ["websocket","polling"],
-        autoConnect : true,
-        reconnection : true,
-        reconnectionAttempts : 5,
-        reconnectionDelay : 1000,
-    });
-    return socket;
+  socket = io(`${SOCKET_URL}/chat`, {
+    auth: { token },
+    transports: ["websocket", "polling"],
+    autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+  });
+
+  return socket;
 }
-
 
 export function disconnectSocket() {
-    if(socket) {
-        socket.disconnect();
-        socket = null ;
-    }
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
 }
 
+// Call after login/token refresh, so a fresh connection picks up the new token
+// instead of an existing connection silently carrying a stale one.
 export function reconnectSocket() {
-    disconnectSocket();
-    return getSocket();
-};
+  disconnectSocket();
+  return getSocket();
+}

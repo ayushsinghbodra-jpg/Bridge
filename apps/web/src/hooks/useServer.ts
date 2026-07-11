@@ -3,15 +3,41 @@
 import { useCallback } from "react";
 import useServerStore from "@/store/serverStore";
 import * as serverService from "@/services/api/server.service";
-import {
-  CreateServerDto,
-  UpdateServerDto,
-  CreateInviteDto,
-  UpdateNicknameDto,
-  TransferOwnershipDto,
-} from "@bridge/types";
+import type {
+  CreateServerDto as CreateServerInput,
+  UpdateServerDto as UpdateServerInput,
+  CreateInviteDto as CreateInviteInput,
+} from "@bridge/contracts";
 
-const useServer = () => {
+const useServer = (): {
+  servers: import("@bridge/types").Server[];
+  activeServer: import("@bridge/types").Server | null;
+  members: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: "owner" | "admin" | "moderator" | "member";
+  }[];
+  invites: import("@bridge/types").Invite[];
+  discoverServers: import("@bridge/types").Server[];
+  discoverHasMore: boolean;
+  isLoading: boolean;
+  error: string | null;
+  setActiveServer: (server: import("@bridge/types").Server | null) => void;
+  fetchServers: () => Promise<import("@bridge/types").Server[] | undefined>;
+  createServer: (data: import("@bridge/contracts").CreateServerDto) => Promise<import("@bridge/types").Server | undefined>;
+  updateServer: (id: string, data: import("@bridge/contracts").UpdateServerDto) => Promise<import("@bridge/types").Server | undefined>;
+  deleteServer: (id: string) => Promise<void | undefined>;
+  fetchMembers: (serverId: string) => Promise<void | undefined>;
+  removeMember: (memberId: string) => void;
+  joinServer: (serverId: string) => Promise<unknown>;
+  leaveServer: (serverId: string) => Promise<void | undefined>;
+  createInvite: (serverId: string, data: import("@bridge/contracts").CreateInviteDto) => Promise<import("@bridge/types").Invite | undefined>;
+  getInviteByCode: (code: string) => Promise<import("@bridge/types").Invite | undefined>;
+  useInvite: (code: string) => Promise<unknown>;
+  discoverMore: (cursor?: string) => Promise<void | undefined>;
+} => {
   const {
     servers,
     activeServer,
@@ -28,7 +54,6 @@ const useServer = () => {
     setActiveServer,
     setMembers,
     addMember,
-    updateMemberInList,
     removeMember,
     setInvites,
     addInvite,
@@ -59,12 +84,13 @@ const useServer = () => {
       withLoading(async () => {
         const data = await serverService.getMyServers();
         setServers(data);
+        return data;
       }),
     [withLoading, setServers]
   );
 
   const createServer = useCallback(
-    (data: CreateServerDto) =>
+    (data: CreateServerInput) =>
       withLoading(async () => {
         const server = await serverService.createServer(data);
         addServer(server);
@@ -74,7 +100,7 @@ const useServer = () => {
   );
 
   const updateServer = useCallback(
-    (id: string, data: UpdateServerDto) =>
+    (id: string, data: UpdateServerInput) =>
       withLoading(async () => {
         const server = await serverService.updateServer(id, data);
         updateServerInList(server);
@@ -115,33 +141,13 @@ const useServer = () => {
     (serverId: string) =>
       withLoading(async () => {
         await serverService.leaveServer(serverId);
-        removeServer(serverId);
+        removeServer(serverId); // no longer a member → drop it from the local list
       }),
     [withLoading, removeServer]
   );
 
-  const updateNickname = useCallback(
-    (serverId: string, data: UpdateNicknameDto) =>
-      withLoading(async () => {
-        const member = await serverService.updateNickname(serverId, data);
-        updateMemberInList(member);
-        return member;
-      }),
-    [withLoading, updateMemberInList]
-  );
-
-  const transferOwnership = useCallback(
-    (serverId: string, data: TransferOwnershipDto) =>
-      withLoading(async () => {
-        const server = await serverService.transferOwnership(serverId, data);
-        updateServerInList(server);
-        return server;
-      }),
-    [withLoading, updateServerInList]
-  );
-
   const createInvite = useCallback(
-    (serverId: string, data: CreateInviteDto) =>
+    (serverId: string, data: CreateInviteInput) =>
       withLoading(async () => {
         const invite = await serverService.createInvite(serverId, data);
         addInvite(invite);
@@ -190,10 +196,9 @@ const useServer = () => {
     updateServer,
     deleteServer,
     fetchMembers,
+    removeMember,
     joinServer,
     leaveServer,
-    updateNickname,
-    transferOwnership,
     createInvite,
     getInviteByCode,
     useInvite,

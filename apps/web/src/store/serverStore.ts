@@ -1,11 +1,19 @@
 import { create } from "zustand";
-import { Server, Member, Invite } from "@bridge/types";
-import { AsyncState } from "@/types/state";
+import type { Server, Invite } from "@bridge/types";
+import type { AsyncState } from "../types/state";
+
+interface ServerMember {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  role: "owner" | "admin" | "moderator" | "member";
+}
 
 interface ServerState extends AsyncState {
   servers: Server[];
   activeServer: Server | null;
-  members: Member[];
+  members: ServerMember[];
   invites: Invite[];
   discoverServers: Server[];
   discoverCursor: string | null;
@@ -17,9 +25,8 @@ interface ServerState extends AsyncState {
   removeServer: (serverId: string) => void;
   setActiveServer: (server: Server | null) => void;
 
-  setMembers: (members: Member[]) => void;
-  addMember: (member: Member) => void;
-  updateMemberInList: (member: Member) => void;
+  setMembers: (members: ServerMember[]) => void;
+  addMember: (member: ServerMember) => void;
   removeMember: (memberId: string) => void;
 
   setInvites: (invites: Invite[]) => void;
@@ -59,10 +66,6 @@ const useServerStore = create<ServerState>((set) => ({
 
   setMembers: (members) => set({ members }),
   addMember: (member) => set((state) => ({ members: [...state.members, member] })),
-  updateMemberInList: (member) =>
-    set((state) => ({
-      members: state.members.map((m) => (m.id === member.id ? member : m)),
-    })),
   removeMember: (memberId) =>
     set((state) => ({ members: state.members.filter((m) => m.id !== memberId) })),
 

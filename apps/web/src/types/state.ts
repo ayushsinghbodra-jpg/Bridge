@@ -1,9 +1,9 @@
 export interface LoadingState {
-    isLoading: boolean;
+  isLoading: boolean;
 }
 
 export interface ErrorState {
-    error: string | null;
+  error: string | null;
 }
 
 export interface AsyncState extends LoadingState, ErrorState {}
