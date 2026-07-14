@@ -1,4 +1,4 @@
-import type { AuthResponse } from "@bridge/contracts";
+import type { AuthResponse } from "@bridge/types";
 import type { User } from "@bridge/types";
 import { api } from "@/lib/api";
 import { saveTokens, getRefreshToken, clearTokens } from "@/services/storage/authStorage";
@@ -10,13 +10,13 @@ export async function register(data: {
   displayName?: string;
 }): Promise<AuthResponse> {
   const res = await api.post<AuthResponse>("/auth/register", data);
-  saveTokens(res.tokens.accessTokens, res.tokens.refreshTokens);
+  saveTokens(res.tokens.accessToken, res.tokens.refreshToken);
   return res;
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const res = await api.post<AuthResponse>("/auth/login", { email, password });
-  saveTokens(res.tokens.accessTokens, res.tokens.refreshTokens);
+  saveTokens(res.tokens.accessToken, res.tokens.refreshToken);
   return res;
 }
 

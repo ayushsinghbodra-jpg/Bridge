@@ -3,12 +3,12 @@ export const SOCKET_EVENTS = {
   DISCONNECT: "disconnect",
   CONNECT_ERROR: "connect_error",
 
-  JOIN_CHANNEL: "join_channel",
-  LEAVE_CHANNEL: "leave_channel",
+  JOIN_CHANNEL: "channel:join",
+  LEAVE_CHANNEL: "channel:leave",
 
-  SEND_MESSAGE: "send_message",
-  RECEIVE_MESSAGE: "receive_message", // fixed typo: "recive" → "receive"
+  SEND_MESSAGE: "message:send",
+  RECEIVE_MESSAGE: "message:new",
 
-  TYPING_START: "typing_start",
-  TYPING_STOP: "typing_stop",
+  TYPING_START: "typing:start",
+  TYPING_STOP: "typing:stop",
 } as const;

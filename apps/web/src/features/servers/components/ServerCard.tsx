@@ -1,6 +1,6 @@
 "use client";
 
-import type { Server } from "@bridge/types";
+import type { Server } from "@/features/servers/types/server.types";
 
 interface ServerCardProps {
   server: Server;

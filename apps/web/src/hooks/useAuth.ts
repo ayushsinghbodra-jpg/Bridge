@@ -5,6 +5,7 @@ import type { User } from "@bridge/types";
 import useAuthStore from "@/store/authStore";
 import * as authService from "@/services/api/auth.service";
 import { getAccessToken, clearTokens } from "@/services/storage/authStorage";
+import { reconnectSocket } from "@/services/websocket/socket";
 
 const useAuth = () => {
   const { user, isAuthenticated, isInitialized, setUser, clearUser, setInitialized } =
@@ -41,7 +42,8 @@ const useAuth = () => {
   const login = useCallback(
     async (input: { email: string; password: string }) => {
       const data = await authService.login(input.email, input.password);
-      setUser(data.user as unknown as User);
+      setUser(data.user);
+      reconnectSocket();
       return data;
     },
     [setUser]
@@ -50,7 +52,8 @@ const useAuth = () => {
   const register = useCallback(
     async (input: { username: string; email: string; password: string; displayName?: string }) => {
       const data = await authService.register(input);
-      setUser(data.user as unknown as User);
+      setUser(data.user);
+      reconnectSocket();
       return data;
     },
     [setUser]

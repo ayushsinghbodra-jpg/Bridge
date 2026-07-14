@@ -1,1 +1,1 @@
-export type { Server } from "@bridge/types";
+export type { ServerResponse as Server } from "@bridge/types";

@@ -1,16 +1,16 @@
 import { create } from "zustand";
-import { Channel } from "@bridge/types";
+import type { ChannelResponse } from "@bridge/types";
 
 interface ChannelState {
-  channels: Channel[];
-  activeChannel: Channel | null;
+  channels: ChannelResponse[];
+  activeChannel: ChannelResponse | null;
   isLoading: boolean;
   error: string | null;
 
-  setChannels: (channels: Channel[]) => void;
-  addChannel: (channel: Channel) => void;
+  setChannels: (channels: ChannelResponse[]) => void;
+  addChannel: (channel: ChannelResponse) => void;
   removeChannel: (channelId: string) => void;
-  setActiveChannel: (channel: Channel) => void;
+  setActiveChannel: (channel: ChannelResponse) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -29,8 +29,6 @@ const useChannelStore = create<ChannelState>((set) => ({
   removeChannel: (channelId) =>
     set((state) => ({
       channels: state.channels.filter((c) => c.id !== channelId),
-      // If the deleted channel was active, clear it so the UI doesn't
-      // point at a channel that no longer exists.
       activeChannel:
         state.activeChannel?.id === channelId ? null : state.activeChannel,
     })),

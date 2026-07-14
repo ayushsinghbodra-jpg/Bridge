@@ -13,7 +13,7 @@ export default function ServerSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { servers, fetchServers } = useServer();
+  const { servers, fetchServers, createServer, useInvite, isLoading, error } = useServer();
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -59,17 +59,6 @@ export default function ServerSidebar() {
           >
             <span className="mr-2 text-base">⌂</span>
             Dashboard
-          </Link>
-          <Link
-            href="/dm"
-            className={`flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-              pathname?.startsWith("/dm")
-                ? "bg-brand-500/10 text-brand-300"
-                : "text-surface-300 hover:bg-surface-800 hover:text-white"
-            }`}
-          >
-            <span className="mr-2 text-base">✉</span>
-            Direct Messages
           </Link>
         </nav>
 
@@ -155,11 +144,17 @@ export default function ServerSidebar() {
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreated={() => void fetchServers()}
+        onCreate={(name) => createServer({ name, visibility: "private" })}
+        isLoading={isLoading}
+        error={error}
       />
       <JoinServerModal
         isOpen={joinOpen}
         onClose={() => setJoinOpen(false)}
         onJoined={() => void fetchServers()}
+        onJoin={(inviteCode) => useInvite(inviteCode)}
+        isLoading={isLoading}
+        error={error}
       />
       <UserSettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>

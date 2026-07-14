@@ -1,11 +1,11 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import type { Channel } from "@bridge/types";
+import type { ChannelResponse } from "@bridge/types";
 
 interface ChannelItemProps {
-  channel: Channel;
-  onClick: (channel: Channel) => void;
+  channel: ChannelResponse;
+  onClick: (channel: ChannelResponse) => void;
   active?: boolean;
 }
 

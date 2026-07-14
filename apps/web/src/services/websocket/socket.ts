@@ -1,7 +1,8 @@
 import { io, Socket } from "socket.io-client";
+import { SOCKET_URL } from "@/lib/constants";
 import { getAccessToken } from "@/services/storage/authStorage";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
+const socketBaseUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? SOCKET_URL;
 
 let socket: Socket | null = null;
 
@@ -10,7 +11,7 @@ export function getSocket(): Socket {
 
   const token = getAccessToken();
 
-  socket = io(`${SOCKET_URL}/chat`, {
+  socket = io(`${socketBaseUrl}/chat`, {
     auth: { token },
     transports: ["websocket", "polling"],
     autoConnect: true,

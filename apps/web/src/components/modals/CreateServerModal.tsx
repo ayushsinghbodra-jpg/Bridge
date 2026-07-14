@@ -6,9 +6,19 @@ interface CreateServerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: () => void;
+  onCreate: (name: string) => Promise<unknown>;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
-const CreateServerModal = ({ isOpen, onClose, onCreated }: CreateServerModalProps) => {
+const CreateServerModal = ({
+  isOpen,
+  onClose,
+  onCreated,
+  onCreate,
+  isLoading = false,
+  error = null,
+}: CreateServerModalProps) => {
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -18,6 +28,17 @@ const CreateServerModal = ({ isOpen, onClose, onCreated }: CreateServerModalProp
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleCreate = async () => {
+    const trimmed = name.trim();
+    if (!trimmed || isLoading) return;
+
+    const server = await onCreate(trimmed);
+    if (server) {
+      onCreated();
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-950/80 backdrop-blur-sm">
@@ -42,21 +63,22 @@ const CreateServerModal = ({ isOpen, onClose, onCreated }: CreateServerModalProp
             onChange={(event) => setName(event.target.value)}
             placeholder="My server"
             className="input-field mt-2"
+            disabled={isLoading}
           />
         </label>
+
+        {error ? <p className="mb-3 text-sm text-red-400">{error}</p> : null}
 
         <div className="mt-6 flex items-center justify-end gap-2">
           <button onClick={onClose} className="rounded-lg px-3 py-2 text-sm font-medium text-surface-400 transition hover:bg-surface-800 hover:text-white">
             Cancel
           </button>
           <button
-            onClick={() => {
-              onCreated();
-              onClose();
-            }}
-            className="btn-primary"
+            onClick={() => void handleCreate()}
+            disabled={isLoading || !name.trim()}
+            className="btn-primary disabled:opacity-50"
           >
-            Create
+            {isLoading ? "Creating..." : "Create"}
           </button>
         </div>
       </div>

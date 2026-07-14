@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./constants";
+import { getAccessToken } from "@/services/storage/authStorage";
 
 class ApiError extends Error{
     constructor (
@@ -13,10 +14,40 @@ class ApiError extends Error{
     }
 };
 
-async function request<T>(path : string , options : RequestInit = {}) : Promise<T> {
-  const url = `${API_BASE_URL}${path}`;
+function sanitizePath(path: string): string {
+  if (!path) return "/";
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("acessToken") : null;
+  let clean = String(path).trim();
+
+  try {
+    clean = decodeURIComponent(clean);
+  } catch {
+    // Ignore malformed encoding and keep the original string.
+  }
+
+  clean = clean.replace(/[“”‘’]/g, "");
+  clean = clean.replace(/^\s+|\s+$/g, "");
+
+  if (!clean) return "/";
+
+  if (clean === "/api") return "/";
+  if (clean.startsWith("/api/")) {
+    clean = clean.slice("/api".length);
+  }
+
+  if (!clean.startsWith("/")) {
+    clean = `/${clean}`;
+  }
+
+  clean = clean.replace(/\/{2,}/g, "/");
+  return clean;
+}
+
+async function request<T>(path : string , options : RequestInit = {}) : Promise<T> {
+  const normalizedPath = sanitizePath(path);
+  const url = `${API_BASE_URL}${normalizedPath}`;
+
+  const token = getAccessToken();
 
   const response = await fetch(url, {
     ...options,

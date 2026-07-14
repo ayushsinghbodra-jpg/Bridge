@@ -13,7 +13,7 @@ export class AnalyticsCollector {
     private timer : ReturnType<typeof setInterval> | null =null;
 
     constructor(config : AnalyticsConfig){
-        this.transports = config.trannsports;
+        this.transports = config.transports;
         this.bufferSize=config.bufferSize ?? 50
         this.flushIntervals=config.flushIntervals?? 5_000;
         this.globalProperties=config.globalProperties ?? {};
@@ -24,7 +24,7 @@ export class AnalyticsCollector {
     }
 
     track(
-        name: string,
+        name: string, 
         opts :{
             userId?: string | null;
             serverId?: string | null;

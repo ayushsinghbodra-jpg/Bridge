@@ -1,39 +1,31 @@
 import { create } from "zustand";
-import type { Server, Invite } from "@bridge/types";
+import type { ServerResponse, InviteResponse, MemberResponse } from "@bridge/types";
 import type { AsyncState } from "../types/state";
 
-interface ServerMember {
-  id: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-  role: "owner" | "admin" | "moderator" | "member";
-}
-
 interface ServerState extends AsyncState {
-  servers: Server[];
-  activeServer: Server | null;
-  members: ServerMember[];
-  invites: Invite[];
-  discoverServers: Server[];
+  servers: ServerResponse[];
+  activeServer: ServerResponse | null;
+  members: MemberResponse[];
+  invites: InviteResponse[];
+  discoverServers: ServerResponse[];
   discoverCursor: string | null;
   discoverHasMore: boolean;
 
-  setServers: (servers: Server[]) => void;
-  addServer: (server: Server) => void;
-  updateServerInList: (server: Server) => void;
+  setServers: (servers: ServerResponse[]) => void;
+  addServer: (server: ServerResponse) => void;
+  updateServerInList: (server: ServerResponse) => void;
   removeServer: (serverId: string) => void;
-  setActiveServer: (server: Server | null) => void;
+  setActiveServer: (server: ServerResponse | null) => void;
 
-  setMembers: (members: ServerMember[]) => void;
-  addMember: (member: ServerMember) => void;
+  setMembers: (members: MemberResponse[]) => void;
+  addMember: (member: MemberResponse) => void;
   removeMember: (memberId: string) => void;
 
-  setInvites: (invites: Invite[]) => void;
-  addInvite: (invite: Invite) => void;
+  setInvites: (invites: InviteResponse[]) => void;
+  addInvite: (invite: InviteResponse) => void;
 
-  setDiscoverServers: (servers: Server[], nextCursor: string | null) => void;
-  appendDiscoverServers: (servers: Server[], nextCursor: string | null) => void;
+  setDiscoverServers: (servers: ServerResponse[], nextCursor: string | null) => void;
+  appendDiscoverServers: (servers: ServerResponse[], nextCursor: string | null) => void;
 
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;

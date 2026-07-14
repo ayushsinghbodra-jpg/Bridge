@@ -14,7 +14,7 @@ export interface AnalyticsTransport {
 }
 
 export interface AnalyticsConfig {
-    trannsports : AnalyticsTransport[];
+    transports : AnalyticsTransport[];
     globalProperties? :Record<string,unknown>;
     bufferSize?: number;
     flushIntervals?: number;   

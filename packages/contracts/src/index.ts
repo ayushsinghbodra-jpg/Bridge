@@ -1,5 +1,2 @@
-export * from "./auth";
-export * from "./channel";
-export * from "./message";
-export * from "./user";
-export * from "./server";
+/** @deprecated Import from `@bridge/types` instead. */
+export * from "@bridge/types";

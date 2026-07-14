@@ -4,7 +4,8 @@ import { User } from "@bridge/types";
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  isInitialized: boolean; // has the initial session-check finished?
+  isInitialized: boolean; 
+  
   setUser: (user: User) => void;
   clearUser: () => void;
   setInitialized: () => void;

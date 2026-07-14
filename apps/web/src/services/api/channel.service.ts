@@ -1,16 +1,15 @@
 import { api } from "@/lib/api";
-import { Channel } from "@bridge/types";
-import { CreateChannelDto } from "@bridge/contracts";
+import type { ChannelResponse, CreateChannelDto } from "@bridge/types";
 
-export async function getChannels(serverId: string): Promise<Channel[]> {
-  return api.get<Channel[]>(`/servers/${serverId}/channels`);
+export async function getChannels(serverId: string): Promise<ChannelResponse[]> {
+  return api.get<ChannelResponse[]>(`/servers/${serverId}/channels`);
 }
 
 export async function createChannel(
   serverId: string,
   data: CreateChannelDto
-): Promise<Channel> {
-  return api.post<Channel>(`/servers/${serverId}/channels`, data);
+): Promise<ChannelResponse> {
+  return api.post<ChannelResponse>(`/servers/${serverId}/channels`, data);
 }
 
 export async function deleteChannel(serverId: string, channelId: string): Promise<void> {

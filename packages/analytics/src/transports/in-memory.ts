@@ -1,6 +1,6 @@
 import {TrackedEvent, AnalyticsTransport } from '../type';
 
-export class ConsoleTransport implements AnalyticsTransport{
+export class InMemoryTransport implements AnalyticsTransport{
     public event : TrackedEvent[] = [];
     
     async send(event : TrackedEvent) : Promise<void>{

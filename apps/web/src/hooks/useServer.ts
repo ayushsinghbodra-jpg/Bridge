@@ -4,40 +4,12 @@ import { useCallback } from "react";
 import useServerStore from "@/store/serverStore";
 import * as serverService from "@/services/api/server.service";
 import type {
-  CreateServerDto as CreateServerInput,
-  UpdateServerDto as UpdateServerInput,
-  CreateInviteDto as CreateInviteInput,
-} from "@bridge/contracts";
+  CreateServerDto,
+  UpdateServerDto,
+  CreateInviteDto,
+} from "@bridge/types";
 
-const useServer = (): {
-  servers: import("@bridge/types").Server[];
-  activeServer: import("@bridge/types").Server | null;
-  members: {
-    id: string;
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    role: "owner" | "admin" | "moderator" | "member";
-  }[];
-  invites: import("@bridge/types").Invite[];
-  discoverServers: import("@bridge/types").Server[];
-  discoverHasMore: boolean;
-  isLoading: boolean;
-  error: string | null;
-  setActiveServer: (server: import("@bridge/types").Server | null) => void;
-  fetchServers: () => Promise<import("@bridge/types").Server[] | undefined>;
-  createServer: (data: import("@bridge/contracts").CreateServerDto) => Promise<import("@bridge/types").Server | undefined>;
-  updateServer: (id: string, data: import("@bridge/contracts").UpdateServerDto) => Promise<import("@bridge/types").Server | undefined>;
-  deleteServer: (id: string) => Promise<void | undefined>;
-  fetchMembers: (serverId: string) => Promise<void | undefined>;
-  removeMember: (memberId: string) => void;
-  joinServer: (serverId: string) => Promise<unknown>;
-  leaveServer: (serverId: string) => Promise<void | undefined>;
-  createInvite: (serverId: string, data: import("@bridge/contracts").CreateInviteDto) => Promise<import("@bridge/types").Invite | undefined>;
-  getInviteByCode: (code: string) => Promise<import("@bridge/types").Invite | undefined>;
-  useInvite: (code: string) => Promise<unknown>;
-  discoverMore: (cursor?: string) => Promise<void | undefined>;
-} => {
+const useServer = () => {
   const {
     servers,
     activeServer,
@@ -90,7 +62,7 @@ const useServer = (): {
   );
 
   const createServer = useCallback(
-    (data: CreateServerInput) =>
+    (data: CreateServerDto) =>
       withLoading(async () => {
         const server = await serverService.createServer(data);
         addServer(server);
@@ -100,7 +72,7 @@ const useServer = (): {
   );
 
   const updateServer = useCallback(
-    (id: string, data: UpdateServerInput) =>
+    (id: string, data: UpdateServerDto) =>
       withLoading(async () => {
         const server = await serverService.updateServer(id, data);
         updateServerInList(server);
@@ -147,7 +119,7 @@ const useServer = (): {
   );
 
   const createInvite = useCallback(
-    (serverId: string, data: CreateInviteInput) =>
+    (serverId: string, data: CreateInviteDto) =>
       withLoading(async () => {
         const invite = await serverService.createInvite(serverId, data);
         addInvite(invite);

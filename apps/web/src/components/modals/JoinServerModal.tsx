@@ -6,9 +6,19 @@ interface JoinServerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onJoined: () => void;
+  onJoin: (inviteCode: string) => Promise<unknown>;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
-const JoinServerModal = ({ isOpen, onClose, onJoined }: JoinServerModalProps) => {
+const JoinServerModal = ({
+  isOpen,
+  onClose,
+  onJoined,
+  onJoin,
+  isLoading = false,
+  error = null,
+}: JoinServerModalProps) => {
   const [inviteCode, setInviteCode] = useState("");
 
   useEffect(() => {
@@ -18,6 +28,17 @@ const JoinServerModal = ({ isOpen, onClose, onJoined }: JoinServerModalProps) =>
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleJoin = async () => {
+    const code = inviteCode.trim();
+    if (!code || isLoading) return;
+
+    const member = await onJoin(code);
+    if (member) {
+      onJoined();
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-950/80 backdrop-blur-sm">
@@ -42,21 +63,22 @@ const JoinServerModal = ({ isOpen, onClose, onJoined }: JoinServerModalProps) =>
             onChange={(event) => setInviteCode(event.target.value)}
             placeholder="Enter invite code"
             className="input-field mt-2"
+            disabled={isLoading}
           />
         </label>
+
+        {error ? <p className="mb-3 text-sm text-red-400">{error}</p> : null}
 
         <div className="mt-6 flex items-center justify-end gap-2">
           <button onClick={onClose} className="rounded-lg px-3 py-2 text-sm font-medium text-surface-400 transition hover:bg-surface-800 hover:text-white">
             Cancel
           </button>
           <button
-            onClick={() => {
-              onJoined();
-              onClose();
-            }}
-            className="btn-primary"
+            onClick={() => void handleJoin()}
+            disabled={isLoading || !inviteCode.trim()}
+            className="btn-primary disabled:opacity-50"
           >
-            Join
+            {isLoading ? "Joining..." : "Join"}
           </button>
         </div>
       </div>

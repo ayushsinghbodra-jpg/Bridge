@@ -29,9 +29,6 @@ export default function DashboardPage() {
                 Browse servers
               </span>
               <span className="rounded-full border border-surface-700 bg-surface-800 px-3 py-1.5 text-sm text-surface-300">
-                Open DMs
-              </span>
-              <span className="rounded-full border border-surface-700 bg-surface-800 px-3 py-1.5 text-sm text-surface-300">
                 Join a room
               </span>
             </div>
