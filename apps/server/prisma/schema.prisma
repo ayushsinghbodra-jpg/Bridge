@@ -25,6 +25,17 @@ enum ChannelType {
   ANNOUNCEMENT
 }
 
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+enum ConversationType {
+  DM
+  GROUP_DM
+}
+
 model User {
   id          String   @id @default(cuid())
   username    String   @unique
@@ -35,12 +46,15 @@ model User {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
-  ownedServers        Server[]  @relation("ServerOwner")
-  memberships         Member[]
-  createdInvites      Invite[]
-  messages            Message[]
+  sessions                Session[]
+  passwordResetTokens     PasswordResetToken[]
+  ownedServers            Server[]                  @relation("ServerOwner")
+  memberships             Member[]
+  createdInvites          Invite[]
+  messages                Message[]
+  ConversationParticipant ConversationParticipant[]
+  DirectMessage           DirectMessage[]
+  Reaction                Reaction[]
 
   @@index([email])
   @@index([username])
@@ -94,6 +108,8 @@ model Server {
   members  Member[]
   invites  Invite[]
   channels Channel[]
+
+  reactions Reaction[]
 
   @@index([ownerId])
   @@index([slug])
@@ -164,6 +180,8 @@ model Message {
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
   author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  reactions Reaction[]
+
   @@index([channelId, createdAt])
   @@index([authorId])
   @@map("messages")
@@ -181,4 +199,60 @@ model AnalyticsEvent {
   @@index([userId])
   @@index([createdAt])
   @@map("analytics_events")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+  joinedAt       DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+}
+
+model DirectMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  createdAt      DateTime     @default(now())
+  editedAt       DateTime?
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+}
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  type         ConversationType // DM or GROUP_DM
+  createdAt    DateTime                  @default(now())
+  participants ConversationParticipant[]
+  messages     DirectMessage[]
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([requesterId, addresseeId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message  Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Server   Server? @relation(fields: [serverId], references: [id])
+  serverId String?
+
+  @@unique([messageId, userId, emoji])
 }
