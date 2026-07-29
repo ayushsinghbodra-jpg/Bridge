@@ -12,7 +12,7 @@ export class ConsoleTransport implements AnalyticsTransport{
             console.log(`${this.prefix} ${event.name}`,{
                 userId:event.userId,
                 serverId: event.serverId,
-            createdAt: event.createdAt.toISOString(),
+                createdAt: event.createdAt.toISOString(),
                 payload: event.payload,
                 id:event.id
             })

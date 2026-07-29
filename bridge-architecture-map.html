@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge Architecture - Dependency Graph</title>
+    <script src="https://d3js.org/d3.v7.min.js" onload="d3Loaded()" onerror="d3Error()"></script>
+    <script>
+        let d3Ready = false;
+        function d3Loaded() {
+            d3Ready = true;
+            console.log('D3.js loaded successfully');
+            initGraph();
+        }
+        function d3Error() {
+            document.body.innerHTML = '<div style="color: white; padding: 20px; font-family: sans-serif;">Error: D3.js failed to load from CDN. Please check your internet connection.</div>';
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+        
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 350px;
+        }
+        
+        #controls h1 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        #search {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        #search:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        #legend {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        #tooltip {
+            position: fixed;
+            background: rgba(30, 30, 30, 0.98);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 1001;
+            max-width: 300px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        
+        #tooltip .title {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        
+        #tooltip .path {
+            color: #888;
+            font-size: 11px;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+        
+        #tooltip .description {
+            color: #ccc;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        #tooltip .dependencies {
+            color: #6366f1;
+            font-size: 12px;
+        }
+        
+        #tooltip .dependents {
+            color: #10b981;
+            font-size: 12px;
+        }
+        
+        #graph {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .node circle {
+            cursor: pointer;
+            stroke: #333;
+            stroke-width: 2px;
+            transition: all 0.2s;
+        }
+        
+        .node circle:hover {
+            stroke: #fff;
+            stroke-width: 3px;
+        }
+        
+        .node text {
+            font-size: 11px;
+            fill: #ccc;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+        
+        .link {
+            stroke-opacity: 0.4;
+            transition: stroke-opacity 0.2s;
+        }
+        
+        .link.highlighted {
+            stroke-opacity: 1;
+            stroke-width: 2px;
+        }
+        
+        .node.dimmed {
+            opacity: 0.2;
+        }
+        
+        .link.dimmed {
+            opacity: 0.1;
+        }
+        
+        #info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #888;
+            border: 1px solid #333;
+        }
+        
+        #flow-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            border: 1px solid #333;
+            max-width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        #flow-info h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .flow-step {
+            padding: 6px 0;
+            border-left: 2px solid #6366f1;
+            padding-left: 10px;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        
+        .flow-step:last-child {
+            border-left-color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h1>Bridge Architecture Map</h1>
+        <input type="text" id="search" placeholder="Search modules, services, components...">
+        <div id="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ef4444;"></div>
+                <span>Frontend (apps/web)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3b82f6;"></div>
+                <span>Backend (apps/server)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #10b981;"></div>
+                <span>Shared Packages</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f59e0b;"></div>
+                <span>Database/Prisma</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8b5cf6;"></div>
+                <span>Real-time/WebSocket</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="tooltip">
+        <div class="title"></div>
+        <div class="path"></div>
+        <div class="description"></div>
+        <div class="dependencies"></div>
+        <div class="dependents"></div>
+    </div>
+    
+    <div id="graph"></div>
+    
+    <div id="info">
+        Scroll to zoom • Drag to pan • Click node to highlight dependencies
+    </div>
+    
+    <div id="loading" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; font-size: 18px;">
+        Loading Bridge Architecture Map...
+    </div>
+    
+    <div id="flow-info">
+        <h3>📨 Message Send Flow</h3>
+        <div class="flow-step">User types in MessageInput component</div>
+        <div class="flow-step">useMessages hook calls send()</div>
+        <div class="flow-step">messageService.sendMessage() API call</div>
+        <div class="flow-step">MessageController handles POST request</div>
+        <div class="flow-step">MessageService.send() validates & saves to DB</div>
+        <div class="flow-step">ChatGateway emits "message:new" to channel</div>
+        <div class="flow-step">useSocket receives message via socket</div>
+        <div class="flow-step">messageStore.addMessage() updates state</div>
+        <div class="flow-step">MessageList re-renders with new message</div>
+    </div>
+
+    <script>
+        function initGraph() {
+            if (typeof d3 === 'undefined') {
+                console.error('D3 not available');
+                return;
+            }
+            
+            // Hide loading message
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            
+            // Dependency graph data based on actual codebase analysis
+            const graphData = {
+            nodes: [
+                // Frontend - Components
+                { id: "LoginForm", group: "frontend", type: "component", path: "apps/web/src/features/auth/components/LoginForm.tsx", description: "Login form component handling user authentication" },
+                { id: "RegisterForm", group: "frontend", type: "component", path: "apps/web/src/features/auth/components/RegisterForm.tsx", description: "Registration form for new users" },
+                { id: "MessageInput", group: "frontend", type: "component", path: "apps/web/src/features/messages/components/MessageInput.tsx", description: "Input field for sending messages" },
+                { id: "MessageItem", group: "frontend", type: "component", path: "apps/web/src/features/messages/components/MessageItem.tsx", description: "Individual message display component" },
+                { id: "MessageList", group: "frontend", type: "component", path: "apps/web/src/features/messages/components/MessageList.tsx", description: "List container for messages" },
+                { id: "ServerCard", group: "frontend", type: "component", path: "apps/web/src/features/servers/components/ServerCard.tsx", description: "Server card display component" },
+                { id: "ServerList", group: "frontend", type: "component", path: "apps/web/src/features/servers/components/ServerList.tsx", description: "List of user's servers" },
+                
+                // Frontend - Hooks
+                { id: "useAuth", group: "frontend", type: "hook", path: "apps/web/src/hooks/useAuth.ts", description: "Authentication hook managing login/logout/session" },
+                { id: "useMessages", group: "frontend", type: "hook", path: "apps/web/src/hooks/useMessages.ts", description: "Message operations hook with optimistic updates" },
+                { id: "useSocket", group: "frontend", type: "hook", path: "apps/web/src/hooks/useSocket.ts", description: "WebSocket connection management hook" },
+                { id: "useChannels", group: "frontend", type: "hook", path: "apps/web/src/hooks/useChannels.ts", description: "Channel operations hook" },
+                { id: "useServer", group: "frontend", type: "hook", path: "apps/web/src/hooks/useServer.ts", description: "Server operations hook" },
+                
+                // Frontend - Stores
+                { id: "authStore", group: "frontend", type: "store", path: "apps/web/src/store/authStore.ts", description: "Zustand store for auth state" },
+                { id: "messageStore", group: "frontend", type: "store", path: "apps/web/src/store/messageStore.ts", description: "Zustand store for message state" },
+                { id: "serverStore", group: "frontend", type: "store", path: "apps/web/src/store/serverStore.ts", description: "Zustand store for server state" },
+                { id: "channelStore", group: "frontend", type: "store", path: "apps/web/src/store/channelStore.ts", description: "Zustand store for channel state" },
+                { id: "socketStore", group: "frontend", type: "store", path: "apps/web/src/store/socketStore.ts", description: "Zustand store for socket state" },
+                
+                // Frontend - Services
+                { id: "api", group: "frontend", type: "service", path: "apps/web/src/lib/api.ts", description: "HTTP API client with auth headers" },
+                { id: "authService", group: "frontend", type: "service", path: "apps/web/src/services/api/auth.service.ts", description: "Authentication API calls" },
+                { id: "messageService", group: "frontend", type: "service", path: "apps/web/src/services/api/message.service.ts", description: "Message API calls" },
+                { id: "serverService", group: "frontend", type: "service", path: "apps/web/src/services/api/server.service.ts", description: "Server API calls" },
+                { id: "channelService", group: "frontend", type: "service", path: "apps/web/src/services/api/channel.service.ts", description: "Channel API calls" },
+                { id: "socket", group: "realtime", type: "service", path: "apps/web/src/services/websocket/socket.ts", description: "Socket.io client connection management" },
+                { id: "socketEvents", group: "realtime", type: "service", path: "apps/web/src/services/websocket/socketEvents.ts", description: "Socket event constants" },
+                
+                // Backend - Modules
+                { id: "AppModule", group: "backend", type: "module", path: "apps/server/src/app.module.ts", description: "Root NestJS module importing all feature modules" },
+                { id: "AuthModule", group: "backend", type: "module", path: "apps/server/src/auth/auth.module.ts", description: "Authentication module with JWT & session management" },
+                { id: "ServerModule", group: "backend", type: "module", path: "apps/server/src/server/server.module.ts", description: "Server management module" },
+                { id: "ChannelModule", group: "backend", type: "module", path: "apps/server/src/channel/channel/channel.module.ts", description: "Channel management module" },
+                { id: "MessageModule", group: "backend", type: "module", path: "apps/server/src/message/message/message.module.ts", description: "Message handling module with WebSocket gateway" },
+                { id: "CommonModule", group: "backend", type: "module", path: "apps/server/src/common/common.module.ts", description: "Common utilities like membership service" },
+                { id: "AnalyticsModule", group: "backend", type: "module", path: "apps/server/src/analytics/analytics.module.ts", description: "Global analytics tracking module" },
+                { id: "HealthModule", group: "backend", type: "module", path: "apps/server/src/health/health.module.ts", description: "Health check endpoint module" },
+                { id: "PrismaModule", group: "database", type: "module", path: "apps/server/src/prisma/prisma.module.ts", description: "Prisma ORM module for database access" },
+                
+                // Backend - Services
+                { id: "AuthService", group: "backend", type: "service", path: "apps/server/src/auth/auth.service.ts", description: "Authentication business logic (register, login, tokens)" },
+                { id: "SessionService", group: "backend", type: "service", path: "apps/server/src/auth/session.service.ts", description: "Session management for refresh tokens" },
+                { id: "ServerService", group: "backend", type: "service", path: "apps/server/src/server/server.service.ts", description: "Server CRUD operations and membership" },
+                { id: "MemberService", group: "backend", type: "service", path: "apps/server/src/server/member.service.ts", description: "Member management operations" },
+                { id: "InviteService", group: "backend", type: "service", path: "apps/server/src/server/invite.service.ts", description: "Invite code generation and validation" },
+                { id: "ChannelService", group: "backend", type: "service", path: "apps/server/src/channel/channel/channel.service.ts", description: "Channel CRUD operations" },
+                { id: "MessageService", group: "backend", type: "service", path: "apps/server/src/message/message/message.service.ts", description: "Message CRUD with membership validation" },
+                { id: "MembershipService", group: "backend", type: "service", path: "apps/server/src/common/membership.service.ts", description: "Membership validation helper" },
+                { id: "AnalyticsService", group: "backend", type: "service", path: "apps/server/src/analytics/analytics.service.ts", description: "Event tracking with buffered writes" },
+                { id: "PrismaService", group: "database", type: "service", path: "apps/server/src/prisma/prisma.service.ts", description: "Prisma client for database queries" },
+                
+                // Backend - Controllers
+                { id: "AuthController", group: "backend", type: "controller", path: "apps/server/src/auth/auth.controller.ts", description: "HTTP endpoints for auth (login, register, me)" },
+                { id: "ServerController", group: "backend", type: "controller", path: "apps/server/src/server/server.controller.ts", description: "HTTP endpoints for server operations" },
+                { id: "MemberController", group: "backend", type: "controller", path: "apps/server/src/server/member.controller.ts", description: "HTTP endpoints for member operations" },
+                { id: "InviteController", group: "backend", type: "controller", path: "apps/server/src/server/invite.controller.ts", description: "HTTP endpoints for invite operations" },
+                { id: "ChannelController", group: "backend", type: "controller", path: "apps/server/src/channel/channel/channel.controller.ts", description: "HTTP endpoints for channel operations" },
+                { id: "MessageController", group: "backend", type: "controller", path: "apps/server/src/message/message/message.controller.ts", description: "HTTP endpoints for message operations" },
+                { id: "HealthController", group: "backend", type: "controller", path: "apps/server/src/health/health.controller.ts", description: "Health check endpoint" },
+                
+                // Backend - Real-time
+                { id: "ChatGateway", group: "realtime", type: "gateway", path: "apps/server/src/message/message/chat.gateway.ts", description: "WebSocket gateway for real-time messaging & voice" },
+                
+                // Shared Packages
+                { id: "@bridge/types", group: "shared", type: "package", path: "packages/types/src/index.ts", description: "Shared TypeScript types (User, Message, Server, etc.)" },
+                { id: "@bridge/constants", group: "shared", type: "package", path: "packages/constants/src/index.ts", description: "Shared constants (events, routes, roles)" },
+                { id: "@bridge/utils", group: "shared", type: "package", path: "packages/utils/src/index.ts", description: "Shared utility functions (date, validation, string)" },
+                { id: "@bridge/config", group: "shared", type: "package", path: "packages/config/src/index.ts", description: "Shared configuration schemas" },
+                { id: "@bridge/analytics", group: "shared", type: "package", path: "packages/analytics/src/index.ts", description: "Shared analytics collector" },
+                { id: "@bridge/contracts", group: "shared", type: "package", path: "packages/contracts/src/index.ts", description: "Deprecated - re-exports @bridge/types" },
+                
+                // Database
+                { id: "PostgreSQL", group: "database", type: "database", path: "apps/server/prisma/schema.prisma", description: "PostgreSQL database with Prisma ORM" },
+                { id: "PrismaSchema", group: "database", type: "schema", path: "apps/server/prisma/schema.prisma", description: "Prisma schema defining User, Server, Channel, Message models" },
+            ],
+            links: [
+                // Frontend component dependencies
+                { source: "LoginForm", target: "useAuth" },
+                { source: "LoginForm", target: "api" },
+                { source: "RegisterForm", target: "useAuth" },
+                { source: "MessageInput", target: "useMessages" },
+                { source: "MessageList", target: "useMessages" },
+                { source: "ServerCard", target: "useServer" },
+                { source: "ServerList", target: "useServer" },
+                
+                // Frontend hook dependencies
+                { source: "useAuth", target: "authStore" },
+                { source: "useAuth", target: "authService" },
+                { source: "useAuth", target: "socket" },
+                { source: "useMessages", target: "messageStore" },
+                { source: "useMessages", target: "authStore" },
+                { source: "useMessages", target: "messageService" },
+                { source: "useSocket", target: "socketStore" },
+                { source: "useSocket", target: "socket" },
+                { source: "useSocket", target: "messageStore" },
+                { source: "useSocket", target: "useAuth" },
+                { source: "useChannels", target: "channelStore" },
+                { source: "useChannels", target: "channelService" },
+                { source: "useServer", target: "serverStore" },
+                { source: "useServer", target: "serverService" },
+                
+                // Frontend store dependencies
+                { source: "authStore", target: "@bridge/types" },
+                { source: "messageStore", target: "@bridge/types" },
+                { source: "serverStore", target: "@bridge/types" },
+                { source: "channelStore", target: "@bridge/types" },
+                { source: "socketStore", target: "socket.io-client" },
+                
+                // Frontend service dependencies
+                { source: "api", target: "@bridge/types" },
+                { source: "authService", target: "api" },
+                { source: "authService", target: "@bridge/types" },
+                { source: "messageService", target: "api" },
+                { source: "messageService", target: "@bridge/types" },
+                { source: "serverService", target: "api" },
+                { source: "serverService", target: "@bridge/types" },
+                { source: "channelService", target: "api" },
+                { source: "channelService", target: "@bridge/types" },
+                { source: "socket", target: "socket.io-client" },
+                { source: "socket", target: "@bridge/constants" },
+                { source: "socketEvents", target: "@bridge/constants" },
+                
+                // Backend module imports
+                { source: "AppModule", target: "PrismaModule" },
+                { source: "AppModule", target: "AuthModule" },
+                { source: "AppModule", target: "ServerModule" },
+                { source: "AppModule", target: "ChannelModule" },
+                { source: "AppModule", target: "MessageModule" },
+                { source: "AppModule", target: "AnalyticsModule" },
+                { source: "AppModule", target: "HealthModule" },
+                { source: "AuthModule", target: "PrismaModule" },
+                { source: "AuthModule", target: "AuthService" },
+                { source: "AuthModule", target: "SessionService" },
+                { source: "ServerModule", target: "PrismaModule" },
+                { source: "ServerModule", target: "CommonModule" },
+                { source: "ServerModule", target: "ServerService" },
+                { source: "ServerModule", target: "MemberService" },
+                { source: "ServerModule", target: "InviteService" },
+                { source: "ChannelModule", target: "PrismaModule" },
+                { source: "ChannelModule", target: "CommonModule" },
+                { source: "ChannelModule", target: "ChannelService" },
+                { source: "MessageModule", target: "PrismaModule" },
+                { source: "MessageModule", target: "CommonModule" },
+                { source: "MessageModule", target: "MessageService" },
+                { source: "MessageModule", target: "ChatGateway" },
+                { source: "CommonModule", target: "PrismaModule" },
+                { source: "CommonModule", target: "MembershipService" },
+                { source: "AnalyticsModule", target: "PrismaModule" },
+                { source: "AnalyticsModule", target: "AnalyticsService" },
+                { source: "HealthModule", target: "PrismaModule" },
+                { source: "PrismaModule", target: "PrismaService" },
+                
+                // Backend service dependencies
+                { source: "AuthService", target: "PrismaService" },
+                { source: "AuthService", target: "@bridge/types" },
+                { source: "AuthService", target: "AnalyticsService" },
+                { source: "AuthService", target: "SessionService" },
+                { source: "SessionService", target: "PrismaService" },
+                { source: "ServerService", target: "PrismaService" },
+                { source: "ServerService", target: "@bridge/types" },
+                { source: "ServerService", target: "AnalyticsService" },
+                { source: "MemberService", target: "PrismaService" },
+                { source: "MemberService", target: "@bridge/types" },
+                { source: "InviteService", target: "PrismaService" },
+                { source: "InviteService", target: "@bridge/types" },
+                { source: "ChannelService", target: "PrismaService" },
+                { source: "ChannelService", target: "@bridge/types" },
+                { source: "ChannelService", target: "AnalyticsService" },
+                { source: "ChannelService", target: "MembershipService" },
+                { source: "MessageService", target: "PrismaService" },
+                { source: "MessageService", target: "@bridge/types" },
+                { source: "MessageService", target: "AnalyticsService" },
+                { source: "MessageService", target: "MembershipService" },
+                { source: "MembershipService", target: "PrismaService" },
+                { source: "AnalyticsService", target: "PrismaService" },
+                { source: "PrismaService", target: "PostgreSQL" },
+                { source: "PrismaService", target: "PrismaSchema" },
+                
+                // Backend controller dependencies
+                { source: "AuthController", target: "AuthService" },
+                { source: "AuthController", target: "@bridge/types" },
+                { source: "ServerController", target: "ServerService" },
+                { source: "ServerController", target: "@bridge/types" },
+                { source: "MemberController", target: "MemberService" },
+                { source: "MemberController", target: "@bridge/types" },
+                { source: "InviteController", target: "InviteService" },
+                { source: "InviteController", target: "@bridge/types" },
+                { source: "ChannelController", target: "ChannelService" },
+                { source: "ChannelController", target: "@bridge/types" },
+                { source: "MessageController", target: "MessageService" },
+                { source: "MessageController", target: "@bridge/types" },
+                { source: "HealthController", target: "PrismaService" },
+                
+                // Real-time dependencies
+                { source: "ChatGateway", target: "MessageService" },
+                { source: "ChatGateway", target: "PrismaService" },
+                { source: "ChatGateway", target: "socket.io" },
+                
+                // Shared package dependencies
+                { source: "@bridge/types", target: "zod" },
+                { source: "@bridge/config", target: "zod" },
+                { source: "@bridge/analytics", target: "@bridge/types" },
+                { source: "@bridge/contracts", target: "@bridge/types" },
+                
+                // Cross-package usage
+                { source: "AuthService", target: "@bridge/types" },
+                { source: "ServerService", target: "@bridge/types" },
+                { source: "ChannelService", target: "@bridge/types" },
+                { source: "MessageService", target: "@bridge/types" },
+                { source: "authStore", target: "@bridge/types" },
+                { source: "messageStore", target: "@bridge/types" },
+                { source: "serverStore", target: "@bridge/types" },
+                { source: "channelStore", target: "@bridge/types" },
+                { source: "authService", target: "@bridge/types" },
+                { source: "messageService", target: "@bridge/types" },
+                { source: "serverService", target: "@bridge/types" },
+                { source: "channelService", target: "@bridge/types" },
+                { source: "useServer", target: "@bridge/types" },
+            ]
+        };
+
+        // Color scheme
+        const colorScale = {
+            frontend: "#ef4444",
+            backend: "#3b82f6",
+            shared: "#10b981",
+            database: "#f59e0b",
+            realtime: "#8b5cf6"
+        };
+
+        // Setup SVG
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        const svg = d3.select("#graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+        
+        const g = svg.append("g");
+        
+        // Zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+        
+        // Create force simulation
+        const simulation = d3.forceSimulation(graphData.nodes)
+            .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(100))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(30))
+            .force("x", d3.forceX(width / 2).strength(0.05))
+            .force("y", d3.forceY(height / 2).strength(0.05));
+        
+        // Group nodes by cluster for better layout
+        const groupCenters = {
+            frontend: { x: width * 0.2, y: height * 0.5 },
+            backend: { x: width * 0.5, y: height * 0.5 },
+            shared: { x: width * 0.8, y: height * 0.3 },
+            database: { x: width * 0.8, y: height * 0.7 },
+            realtime: { x: width * 0.5, y: height * 0.8 }
+        };
+        
+        simulation.force("group", d3.forceX()
+            .x(d => groupCenters[d.group]?.x || width / 2)
+            .strength(0.3));
+        
+        simulation.force("groupY", d3.forceY()
+            .y(d => groupCenters[d.group]?.y || height / 2)
+            .strength(0.3));
+        
+        // Draw links
+        const link = g.append("g")
+            .selectAll("line")
+            .data(graphData.links)
+            .enter()
+            .append("line")
+            .attr("class", "link")
+            .attr("stroke", "#666")
+            .attr("stroke-width", 1);
+        
+        // Draw nodes
+        const node = g.append("g")
+            .selectAll(".node")
+            .data(graphData.nodes)
+            .enter()
+            .append("g")
+            .attr("class", "node");
+        
+        node.append("circle")
+            .attr("r", d => {
+                if (d.type === "module" || d.type === "database") return 20;
+                if (d.type === "service" || d.type === "gateway") return 15;
+                return 10;
+            })
+            .attr("fill", d => colorScale[d.group] || "#888");
+        
+        node.append("text")
+            .attr("dy", d => {
+                if (d.type === "module" || d.type === "database") return 35;
+                if (d.type === "service" || d.type === "gateway") return 30;
+                return 25;
+            })
+            .text(d => d.id);
+        
+        // Tooltip
+        const tooltip = d3.select("#tooltip");
+        
+        node.on("mouseover", function(event, d) {
+            tooltip.style("display", "block");
+            tooltip.select(".title").text(d.id);
+            tooltip.select(".path").text(d.path);
+            tooltip.select(".description").text(d.description);
+            
+            // Find dependencies and dependents
+            const dependencies = graphData.links
+                .filter(l => l.source.id === d.id)
+                .map(l => l.target.id);
+            const dependents = graphData.links
+                .filter(l => l.target.id === d.id)
+                .map(l => l.source.id);
+            
+            tooltip.select(".dependencies").text(
+                dependencies.length > 0 ? `Depends on: ${dependencies.slice(0, 3).join(", ")}${dependencies.length > 3 ? "..." : ""}` : ""
+            );
+            tooltip.select(".dependents").text(
+                dependents.length > 0 ? `Used by: ${dependents.slice(0, 3).join(", ")}${dependents.length > 3 ? "..." : ""}` : ""
+            );
+            
+            tooltip
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY + 15) + "px");
+        })
+        .on("mousemove", function(event) {
+            tooltip
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY + 15) + "px");
+        })
+        .on("mouseout", function() {
+            tooltip.style("display", "none");
+        })
+        .on("click", function(event, d) {
+            // Highlight dependencies and dependents
+            const dependencies = new Set([d.id]);
+            const dependents = new Set([d.id]);
+            
+            graphData.links.forEach(l => {
+                if (l.source.id === d.id) {
+                    dependencies.add(l.target.id);
+                }
+                if (l.target.id === d.id) {
+                    dependents.add(l.source.id);
+                }
+            });
+            
+            const highlighted = new Set([...dependencies, ...dependents]);
+            
+            node.classed("dimmed", n => !highlighted.has(n.id));
+            link.classed("dimmed", l => !highlighted.has(l.source.id) || !highlighted.has(l.target.id));
+            link.classed("highlighted", l => highlighted.has(l.source.id) && highlighted.has(l.target.id));
+            
+            event.stopPropagation();
+        });
+        
+        // Click on background to reset
+        svg.on("click", function() {
+            node.classed("dimmed", false);
+            link.classed("dimmed", false);
+            link.classed("highlighted", false);
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById("search");
+        searchInput.addEventListener("input", function() {
+            const query = this.value.toLowerCase();
+            
+            if (query.length === 0) {
+                node.classed("dimmed", false);
+                link.classed("dimmed", false);
+                return;
+            }
+            
+            const matchedNodes = new Set(
+                graphData.nodes
+                    .filter(n => n.id.toLowerCase().includes(query) || n.path.toLowerCase().includes(query))
+                    .map(n => n.id)
+            );
+            
+            node.classed("dimmed", n => !matchedNodes.has(n.id));
+            link.classed("dimmed", l => !matchedNodes.has(l.source.id) || !matchedNodes.has(l.target.id));
+        });
+        
+        // Update positions on simulation tick
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+            
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+        
+        // Handle window resize
+        window.addEventListener("resize", () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.alpha(0.3).restart();
+        });
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, d3Ready:', d3Ready, 'd3 available:', typeof d3 !== 'undefined');
+            if (d3Ready || typeof d3 !== 'undefined') {
+                initGraph();
+            } else {
+                // Fallback timeout if D3 takes too long to load
+                setTimeout(function() {
+                    console.log('Timeout check - d3 available:', typeof d3 !== 'undefined');
+                    if (typeof d3 !== 'undefined') {
+                        initGraph();
+                    } else {
+                        document.body.innerHTML = '<div style="color: white; padding: 20px; font-family: sans-serif;">Loading D3.js... Please wait or check your internet connection.</div>';
+                    }
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

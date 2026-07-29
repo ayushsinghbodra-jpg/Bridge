@@ -1,0 +1,68 @@
+# syntax=docker/dockerfile:1
+
+# deps: install workspace dependencies once; cached until lockfiles change
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+RUN apk add --no-cache openssl
+
+COPY package.json package-lock.json ./
+COPY apps/server/package.json ./apps/server/
+COPY packages/types/package.json ./packages/types/
+COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/constants/package.json ./packages/constants/
+COPY packages/logger/package.json ./packages/logger/
+COPY packages/config/package.json ./packages/config/
+COPY packages/utils/package.json ./packages/utils/
+
+RUN npm ci
+
+# build: compile shared packages, generate Prisma client, emit server dist/
+FROM node:20-alpine AS build
+WORKDIR /app
+
+RUN apk add --no-cache openssl
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN npm run build --workspace=@bridge/types \
+  --workspace=@bridge/contracts \
+  --workspace=@bridge/constants \
+  --workspace=@bridge/logger \
+  --workspace=@bridge/config \
+  --workspace=@bridge/utils
+
+WORKDIR /app/apps/server
+RUN npx prisma generate
+WORKDIR /app
+RUN npm run build --workspace=@bridge/server
+
+# production: slim runtime image with only what the API needs to run + migrate
+FROM node:20-alpine AS production
+WORKDIR /app
+
+RUN apk add --no-cache openssl \
+  && addgroup -S bridge -g 1001 \
+  && adduser -S bridge -u 1001 -G bridge
+
+ENV NODE_ENV=production
+
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/apps/server/package.json ./apps/server/package.json
+COPY --from=build /app/apps/server/dist ./apps/server/dist
+COPY --from=build /app/apps/server/prisma ./apps/server/prisma
+COPY --from=build /app/packages ./packages
+COPY infrastructure/docker/docker-entrypoint.server.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+  && chown -R bridge:bridge /app
+
+USER bridge
+
+WORKDIR /app/apps/server
+
+EXPOSE 3000
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
