@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { AnalyticsService } from "../../analytics/analytics.service";
 import { MembershipService } from "../../common/membership.service";
 import type { MessagePage, MessageResponse } from "@bridge/types";

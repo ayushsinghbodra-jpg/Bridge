@@ -416,4 +416,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       userId: info.userId,
     });
   }
+  
+  broadcastToChannel(channelId : string , event : string , payload : unknown){
+    this.server.to(`channel: ${channel}`).emit(event,payload);
+  }
+
+  private getUserid(client : Socket) : string | null {
+    return this.userMap.get(client.id)?userId ??null
+  }
+
 }

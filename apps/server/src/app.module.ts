@@ -9,7 +9,7 @@ import { ServerModule } from "./server/server.module";
 import { ChannelModule } from "./channel/channel/channel.module";
 import { MessageModule } from "./message/message/message.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
-
+import { ReactionModule } from "./reaction/reaction.module";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -25,6 +25,7 @@ import { AnalyticsModule } from "./analytics/analytics.module";
     ChannelModule,
     MessageModule,
     HealthModule,
+    ReactionModule,
   ],
   providers: [
     {
