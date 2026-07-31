@@ -10,6 +10,11 @@ import { ChannelModule } from "./channel/channel/channel.module";
 import { MessageModule } from "./message/message/message.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
 import { ReactionModule } from "./reaction/reaction.module";
+import { MentionModule } from "./mentions/mention.module";
+import { PinningModule } from "./pinning/pinning.module";
+import { EmojiModule } from "./emoji/emoji.module";
+import { AuditLogModule } from "./audit/audit.module";
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -21,11 +26,15 @@ import { ReactionModule } from "./reaction/reaction.module";
     PrismaModule,
     AuthModule,
     AnalyticsModule,
+    AuditLogModule,
     ServerModule,
     ChannelModule,
     MessageModule,
     HealthModule,
     ReactionModule,
+    MentionModule,
+    PinningModule,
+    EmojiModule,
   ],
   providers: [
     {

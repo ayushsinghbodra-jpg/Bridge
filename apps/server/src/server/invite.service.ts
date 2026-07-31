@@ -7,6 +7,7 @@ import {
 import * as crypto from "crypto";
 import { PrismaService } from "../prisma/prisma.service";
 import { AnalyticsService } from "../analytics/analytics.service";
+import { AuditLogService } from "../audit/audit.service";
 import type { CreateInviteDto } from "@bridge/types";
 import type { InviteResponse, MemberResponse } from "@bridge/types";
 
@@ -15,6 +16,7 @@ export class InviteService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly analytics: AnalyticsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(
@@ -51,6 +53,12 @@ export class InviteService {
       userId,
       serverId,
       payload: { code, maxUses: dto.maxUses, expiresInHours: dto.expiresInHours },
+    });
+
+    this.auditLog.log(serverId, userId, "INVITE_CREATED", invite.id, {
+      code,
+      maxUses: dto.maxUses,
+      expiresInHours: dto.expiresInHours,
     });
 
     return this.toResponse(invite, invite.server._count.members);
@@ -120,6 +128,11 @@ export class InviteService {
       payload: { method: "invite", inviteCode: code },
     });
 
+    this.auditLog.log(invite.serverId, userId, "MEMBER_JOINED", userId, {
+      method: "invite",
+      code,
+    });
+
     return {
       id: member.id,
       userId: member.userId,
@@ -166,6 +179,8 @@ export class InviteService {
     }
 
     await this.prisma.invite.delete({ where: { id: inviteId } });
+
+    this.auditLog.log(serverId, userId, "INVITE_REVOKED", inviteId, { code: invite.code });
   }
 
   private generateCode(): string {

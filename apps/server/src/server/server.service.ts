@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AnalyticsService } from "../analytics/analytics.service";
+import { AuditLogService } from "../audit/audit.service";
 import type { CreateServerDto, UpdateServerDto } from "@bridge/types";
 import type { ServerResponse } from "@bridge/types";
 
@@ -14,6 +15,7 @@ export class ServerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly analytics: AnalyticsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(dto: CreateServerDto, userId: string): Promise<ServerResponse> {
@@ -45,6 +47,11 @@ export class ServerService {
       userId,
       serverId: server.id,
       payload: { name: server.name, visibility: server.visibility },
+    });
+
+    this.auditLog.log(server.id, userId, "SERVER_CREATED", server.id, {
+      name: server.name,
+      visibility: server.visibility,
     });
 
     return this.toResponse(server, server._count.members);
@@ -123,6 +130,14 @@ export class ServerService {
       include: { _count: { select: { members: true } } },
     });
 
+    const changes: Record<string, unknown> = {};
+    if (dto.name !== undefined) changes.name = dto.name;
+    if (dto.description !== undefined) changes.description = dto.description;
+    if (dto.iconUrl !== undefined) changes.iconUrl = dto.iconUrl;
+    if (dto.visibility !== undefined) changes.visibility = dto.visibility;
+
+    this.auditLog.log(serverId, userId, "SERVER_UPDATED", serverId, changes);
+
     return this.toResponse(updated, updated._count.members);
   }
 
@@ -169,6 +184,14 @@ export class ServerService {
       userId: currentOwnerId,
       serverId,
       payload: { newOwnerId },
+    });
+
+    this.auditLog.log(serverId, currentOwnerId, "OWNERSHIP_TRANSFERRED", newOwnerId, {
+      previousOwnerId: currentOwnerId,
+    });
+    this.auditLog.log(serverId, currentOwnerId, "ROLE_CHANGED", currentOwnerId, {
+      role: "ADMIN",
+      reason: "Demoted after transferring server ownership",
     });
   }
 

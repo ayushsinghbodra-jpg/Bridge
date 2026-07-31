@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AnalyticsService } from "../analytics/analytics.service";
+import { AuditLogService } from "../audit/audit.service";
 import { MembershipService } from "../common/membership.service";
 import type { MemberResponse } from "@bridge/types";
 
@@ -14,6 +15,7 @@ export class MemberService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly analytics: AnalyticsService,
+    private readonly auditLog: AuditLogService,
     private readonly membership: MembershipService,
   ) {}
 
@@ -71,6 +73,8 @@ export class MemberService {
       payload: { method: "direct" },
     });
 
+    this.auditLog.log(serverId, userId, "MEMBER_JOINED", userId, { method: "direct" });
+
     return this.toResponse(member);
   }
 
@@ -92,6 +96,8 @@ export class MemberService {
     });
 
     this.analytics.track("member_left", { userId, serverId });
+
+    this.auditLog.log(serverId, userId, "MEMBER_LEFT", userId);
   }
 
   async updateNickname(
@@ -113,6 +119,8 @@ export class MemberService {
         },
       },
     });
+
+    this.auditLog.log(serverId, userId, "MEMBER_NICKNAME_CHANGED", userId, { nickname });
 
     return this.toResponse(updated);
   }
@@ -139,6 +147,8 @@ export class MemberService {
     }
 
     await this.prisma.member.delete({ where: { id: target.id } });
+
+    this.auditLog.log(serverId, actorUserId, "MEMBER_KICKED", targetUserId);
   }
 
   private toResponse(

@@ -10,7 +10,7 @@
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "module": "commonjs",
     "moduleResolution": "node10",
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "target": "ES2020"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

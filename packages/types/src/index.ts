@@ -5,3 +5,6 @@ export * from './message';
 export * from './auth';
 export * from './member';
 export * from './reaction';
+export * from './pinning';
+export * from './emoji';
+export * from './audit';

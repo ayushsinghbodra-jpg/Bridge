@@ -6,11 +6,13 @@ import { CommonModule } from "../../common/common.module";
 import { MessageController } from "./message.controller";
 import { MessageService } from "./message.service";
 import { ChatGateway } from "./chat.gateway";
+import { MentionModule } from "../../mentions/mention.module";
 
 @Module({
   imports: [
     PrismaModule,
     CommonModule,
+    MentionModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

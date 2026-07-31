@@ -35,5 +35,4 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     await this.$queryRaw`SELECT 1`;
     return { ok: true, message: "Prisma service ready" };
   }
-  
 }

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const sendMessageSchema = z.object({
   content: z.string().min(1, "Message content should be at least 1 character").max(4000, "Message content should be at most 4000 characters"),
+  replyToId: z.string().cuid("Invalid replyToId").optional(),
 });
 
 export const editMessageSchema = z.object({
@@ -19,14 +20,22 @@ export interface MessageAuthor {
   role?: "owner" | "admin" | "moderator" | "member";
 }
 
+export interface ReplyToMessage {
+  id: string;
+  content: string;
+  author: MessageAuthor;
+}
+
 export interface MessageResponse {
   id: string;
   channelId: string;
   content: string;
   author: MessageAuthor;
+  replyTo: ReplyToMessage | null;
   editedAt: string | null;
   deleted: boolean;
   createdAt: string;
+  mentionedUserIds : string[];
 }
 
 export interface Message {

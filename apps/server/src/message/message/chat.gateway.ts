@@ -140,13 +140,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("message:send")
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { channelId: string; content: string },
+    @MessageBody() data: { channelId: string; content: string; replyToId?: string },
   ) {
     const userId = this.getUserId(client);
     if (!userId) return;
 
     try {
-      const message = await this.messageService.send(data.channelId, userId, data.content);
+      const message = await this.messageService.send(data.channelId, userId, data.content, data.replyToId);
       this.server.to(`channel:${data.channelId}`).emit("message:new", message);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to send message";
@@ -418,11 +418,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
   
   broadcastToChannel(channelId : string , event : string , payload : unknown){
-    this.server.to(`channel: ${channel}`).emit(event,payload);
+    this.server.to(`channel:${channelId}`).emit(event,payload);
   }
 
   private getUserid(client : Socket) : string | null {
-    return this.userMap.get(client.id)?userId ??null
+    return this.userMap.get(client.id)?.userId ??null
   }
 
 }

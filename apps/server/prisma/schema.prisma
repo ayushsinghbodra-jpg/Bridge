@@ -36,6 +36,22 @@ enum ConversationType {
   GROUP_DM
 }
 
+enum AuditAction {
+  SERVER_CREATED
+  SERVER_UPDATED
+  OWNERSHIP_TRANSFERRED
+  ROLE_CHANGED
+  MEMBER_JOINED
+  MEMBER_LEFT
+  MEMBER_KICKED
+  MEMBER_NICKNAME_CHANGED
+  CHANNEL_CREATED
+  CHANNEL_UPDATED
+  CHANNEL_DELETED
+  INVITE_CREATED
+  INVITE_REVOKED
+}
+
 model User {
   id          String   @id @default(cuid())
   username    String   @unique
@@ -55,7 +71,10 @@ model User {
   ConversationParticipant ConversationParticipant[]
   DirectMessage           DirectMessage[]
   Reaction                Reaction[]
-
+  mentions                Mention[]
+  pinnedMessages          PinnedMessage[]
+  uploadedEmojis          CustomEmoji[]
+  auditLogEntries         AuditLog[]
   @@index([email])
   @@index([username])
   @@map("users")
@@ -111,6 +130,12 @@ model Server {
 
   reactions Reaction[]
 
+  pinnedMessages PinnedMessage[]
+
+  customEmojis CustomEmoji[]
+
+  auditLogs AuditLog[]
+
   @@index([ownerId])
   @@index([slug])
   @@map("servers")
@@ -164,6 +189,8 @@ model Channel {
   server   Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
   messages Message[]
 
+  pinnedMessages PinnedMessage[]
+
   @@index([serverId])
   @@map("channels")
 }
@@ -173,6 +200,7 @@ model Message {
   channelId String    @map("channel_id")
   authorId  String    @map("author_id")
   content   String
+  replyToId String?   @map("reply_to_id")
   editedAt  DateTime? @map("edited_at")
   deleted   Boolean   @default(false)
   createdAt DateTime  @default(now()) @map("created_at")
@@ -180,11 +208,70 @@ model Message {
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
   author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  replyTo Message? @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies Message[] @relation("MessageReply")
+
   reactions Reaction[]
+
+  mentions Mention[]
+
+  pinnedMessages PinnedMessage[]
 
   @@index([channelId, createdAt])
   @@index([authorId])
+  @@index([replyToId])
   @@map("messages")
+}
+
+model PinnedMessage {
+  id        String   @id @default(cuid())
+  messageId String   @map("message_id")
+  channelId String   @map("channel_id")
+  serverId  String   @map("server_id")
+  pinnedBy  String   @map("pinned_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  server    Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  pinnedByUser User  @relation(fields: [pinnedBy], references: [id], onDelete: Cascade)
+
+  @@unique([messageId])
+  @@index([channelId, createdAt])
+  @@map("pinned_messages")
+}
+
+model CustomEmoji {
+  id         String   @id @default(cuid())
+  serverId   String   @map("server_id")
+  name       String
+  imageUrl   String   @map("image_url")
+  uploaderId String   @map("uploader_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  uploader User   @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, name])
+  @@index([serverId])
+  @@map("custom_emojis")
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  serverId  String      @map("server_id")
+  actorId   String      @map("actor_id")
+  action    AuditAction
+  targetId  String?     @map("target_id")
+  metadata  Json?       @map("metadata")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  actor  User   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, createdAt])
+  @@index([action])
+  @@map("audit_logs")
 }
 
 model AnalyticsEvent {
@@ -255,4 +342,15 @@ model Reaction {
   serverId String?
 
   @@unique([messageId, userId, emoji])
+}
+model Mention {
+    id        String    @id @default(cuid())
+    messageId String 
+    userId    String
+    createdAt DateTime  @default(now())
+
+    message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+    @@unique([messageId, userId])
 }

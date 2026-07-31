@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { AnalyticsService } from "../../analytics/analytics.service";
+import { AuditLogService } from "../../audit/audit.service";
 import { MembershipService } from "../../common/membership.service";
 import type { CreateChannelDto, UpdateChannelDto, ChannelResponse } from "@bridge/types";
 
@@ -9,6 +10,7 @@ export class ChannelService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly analytics: AnalyticsService,
+    private readonly auditLog: AuditLogService,
     private readonly membership: MembershipService,
   ) {}
 
@@ -54,6 +56,11 @@ export class ChannelService {
       payload: { channelId: channel.id, name: channel.name, type: channel.type },
     });
 
+    this.auditLog.log(serverId, userId, "CHANNEL_CREATED", channel.id, {
+      name: channel.name,
+      type: channel.type,
+    });
+
     return this.toResponse(channel);
   }
 
@@ -91,6 +98,12 @@ export class ChannelService {
       },
     });
 
+    const changes: Record<string, unknown> = {};
+    if (dto.name !== undefined) changes.name = dto.name;
+    if (dto.topic !== undefined) changes.topic = dto.topic;
+
+    this.auditLog.log(channel.serverId, userId, "CHANNEL_UPDATED", channelId, changes);
+
     return this.toResponse(updated);
   }
 
@@ -100,6 +113,10 @@ export class ChannelService {
 
     await this.assertMemberRole(channel.serverId, userId, ["OWNER", "ADMIN"]);
     await this.prisma.channel.delete({ where: { id: channelId } });
+
+    this.auditLog.log(channel.serverId, userId, "CHANNEL_DELETED", channelId, {
+      name: channel.name,
+    });
   }
 
   private async assertMemberRole(serverId: string, userId: string, roles: string[]) {

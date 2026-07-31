@@ -1,0 +1,1 @@
+export const REPLY_SNIPPET_MAX_LENGTH = 100;
