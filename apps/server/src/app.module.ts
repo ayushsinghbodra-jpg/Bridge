@@ -14,7 +14,7 @@ import { MentionModule } from "./mentions/mention.module";
 import { PinningModule } from "./pinning/pinning.module";
 import { EmojiModule } from "./emoji/emoji.module";
 import { AuditLogModule } from "./audit/audit.module";
-
+import { DmModule } from "./dm/dm/dm.module";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -35,6 +35,7 @@ import { AuditLogModule } from "./audit/audit.module";
     MentionModule,
     PinningModule,
     EmojiModule,
+    DmModule,
   ],
   providers: [
     {

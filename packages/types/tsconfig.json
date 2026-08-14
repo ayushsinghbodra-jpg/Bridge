@@ -9,7 +9,7 @@
     "sourceMap": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "module": "commonjs",
-    "moduleResolution": "node10",
+    "moduleResolution": "node",
     "ignoreDeprecations": "5.0",
     "target": "ES2020"
   },

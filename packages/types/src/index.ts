@@ -8,3 +8,4 @@ export * from './reaction';
 export * from './pinning';
 export * from './emoji';
 export * from './audit';
+export * from './dm';

@@ -292,6 +292,7 @@ model ConversationParticipant {
   id             String       @id @default(cuid())
   conversationId String
   userId         String
+  lastReadAt     DateTime?
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
   joinedAt       DateTime     @default(now())
@@ -300,14 +301,21 @@ model ConversationParticipant {
 }
 
 model DirectMessage {
-  id             String       @id @default(cuid())
+  id             String        @id @default(cuid())
   conversationId String
   senderId       String
   content        String
-  createdAt      DateTime     @default(now())
+  replyToId      String?
   editedAt       DateTime?
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  sender         User         @relation(fields: [senderId], references: [id])
+  deleted        Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+
+  conversation Conversation    @relation(fields: [conversationId], references: [id])
+  sender       User            @relation(fields: [senderId], references: [id])
+  replyTo      DirectMessage?  @relation("DirectMessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      DirectMessage[] @relation("DirectMessageReply")
+
+  @@index([conversationId, createdAt])
 }
 
 model Conversation {
