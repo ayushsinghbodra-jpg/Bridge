@@ -1,0 +1,119 @@
+# Bridge Project — Node.js Dependencies
+# Generated: 2026-08-17
+# Runtime: Node.js v20.18.0, npm v10.8.2
+#
+# SETUP INSTRUCTIONS:
+#   1. Install Node.js v20.x (via nvm, standalone binary, or package manager)
+#   2. Run: npm install (from project root)
+#
+# To install nvm (no sudo required):
+#   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+#   nvm install 20
+#   nvm use 20
+#
+# To install Node.js standalone (no sudo):
+#   wget https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.xz
+#   tar -xf node-v20.18.0-linux-x64.tar.xz -C ~/.local/
+#   export PATH="$HOME/.local/node-v20.18.0-linux-x64/bin:$PATH"
+
+# ===========================
+# ROOT (bridge)
+# ===========================
+# Runtime
+@nestjs/platform-express: ^11.1.28
+@nestjs/platform-socket.io: ^11.1.28
+@nestjs/websockets: ^11.1.28
+class-transformer: ^0.5.1
+class-validator: ^0.15.1
+socket.io: ^4.8.3
+
+# Dev
+@types/node: ^26.2.0
+@types/passport-jwt: ^4.0.1
+eslint: ^9
+prettier: ^3
+turbo: ^1.10.0
+typescript: ^5.0.0
+
+# ===========================
+# apps/server (@bridge/server)
+# ===========================
+@nestjs/common: ^11.1.28
+@nestjs/config: ^4.0.4
+@nestjs/core: ^11.1.28
+@nestjs/jwt: ^11.0.2
+@nestjs/passport: ^11.0.5
+@nestjs/throttler: ^6.5.0
+@prisma/client: ^5.22.0
+argon2: ^0.44.0
+cors: ^2.8.6
+dotenv: ^17.4.2
+express: ^5.2.1
+nodemon: ^3.1.14
+passport: ^0.7.0
+passport-jwt: ^4.0.1
+prisma: ^5.22.0
+reflect-metadata: ^0.2.2
+rxjs: ^7.8.2
+ts-node: ^10.9.2
+tsconfig-paths: ^4.2.0
+@types/body-parser: ^1.19.6
+@types/connect: ^3.4.38
+@types/cors: ^2.8.19
+@types/express: ^5.0.6
+@types/express-serve-static-core: ^5.1.2
+@types/http-errors: ^2.0.5
+@types/qs: ^6.15.1
+@types/range-parser: ^1.2.7
+@types/send: ^1.2.1
+@types/serve-static: ^2.2.0
+
+# ===========================
+# apps/web (@bridge/web)
+# ===========================
+@tanstack/react-query: ^5.101.1
+@tailwindcss/postcss: ^4.3.2
+autoprefixer: ^10.5.2
+axios: ^1.18.1
+next: ^16.2.9
+postcss: ^8.5.15
+socket.io-client: ^4.8.3
+tailwindcss: ^4.3.1
+zustand: ^5.0.14
+@types/react: ^18.2.0
+@types/react-dom: ^18.2.0
+@vitejs/plugin-react: ^4.0.0
+vite: ^4.4.0
+
+# ===========================
+# apps/admin (@bridge/admin)
+# ===========================
+react: ^18.2.0
+react-dom: ^18.2.0
+@types/react: ^18.2.0
+@types/react-dom: ^18.2.0
+@vitejs/plugin-react: ^4.0.0
+vite: ^4.4.0
+
+# ===========================
+# apps/worker (@bridge/worker)
+# ===========================
+ts-node: ^10.9.2
+tsconfig-paths: ^4.2.0
+@types/node: ^20.19.43
+
+# ===========================
+# packages/types (@bridge/types)
+# ===========================
+zod: ^4.4.3
+
+# ===========================
+# Shared internal packages (linked via monorepo workspaces)
+# ===========================
+# @bridge/config    -> packages/config
+# @bridge/constants -> packages/constants
+# @bridge/logger    -> packages/logger
+# @bridge/ui        -> packages/ui
+# @bridge/utils     -> packages/utils
+# @bridge/contracts -> packages/contracts
+# @bridge/analytics -> packages/analytics
