@@ -13,6 +13,7 @@
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "@types/passport-jwt": "^4.0.1",
     "eslint": "^9",
     "prettier": "^3",

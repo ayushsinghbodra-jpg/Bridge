@@ -6,3 +6,4 @@ async function createTestDb() {
 async function dropTestDb() {
     await testDb.$disconnect();
 }
+export {testDb, createTestDb, dropTestDb};

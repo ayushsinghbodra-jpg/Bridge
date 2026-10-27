@@ -10,6 +10,9 @@ const serverE2EConfig: Config = {
     name: 'server-e2e',
     color: 'green',
   },
+  setupFilesAfterEnv: [
+    "<rootDir>/test/setup-e2e.ts",
+  ],
 };
 
 export default serverE2EConfig;

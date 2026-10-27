@@ -14,6 +14,8 @@
     "test": "jest --config jest.config.ts",
     "test:watch": "jest --config jest.config.ts --watch",
     "test:cov": "jest --config jest.config.ts --coverage",
+    "prisma:seed": "ts-node --project prisma/tsconfig.seed.json prisma/seed.ts",
+    "pretest:e2e": "DATABASE_URL=postgresql://bridge:password@localhost:5432/bridge_test npx prisma migrate deploy",
     "test:e2e": "jest --config jest-e2e.config.ts",
     "type-check:test": "tsc -p tsconfig.test.json --noEmit"
   },
