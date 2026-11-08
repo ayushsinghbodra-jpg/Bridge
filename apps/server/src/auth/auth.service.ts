@@ -203,10 +203,13 @@ export class AuthService {
     });
 
     const refreshSecret = this.config.get<string>("JWT_REFRESH_SECRET", this.config.get<string>("JWT_SECRET", "development-secret"));
-    const refreshToken = this.jwt.sign(payload, {
-      secret: refreshSecret,
-      expiresIn: this.config.get<string>("JWT_REFRESH_EXPIRES_IN", "7d") as unknown as number,
-    });
+    const refreshToken = this.jwt.sign(
+      { sub: userId, jti: crypto.randomUUID() },
+      {
+        secret: refreshSecret,
+        expiresIn: this.config.get<string>("JWT_REFRESH_EXPIRES_IN", "7d") as unknown as number,
+      },
+    );
 
     return {
       accessToken,

@@ -1,16 +1,27 @@
-import { INestApplication, ValidationPipe } from "@nestjs/common";
-import { AppModule } from "../../../server/src/app.module";
-import { HttpExceptionFilter } from "../../../server/src/common/filters/http-exception.filter";
-import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { AppModule } from "../../src/app.module";
+import { HttpExceptionFilter } from "../../src/common/filters/http-exception.filter";
+import { Test } from "@nestjs/testing";
+import { ThrottlerGuard } from "@nestjs/throttler";
+import { PrismaService } from "../../src/prisma/prisma.service";
+import { testDb } from "./test-db";
 
-export async function createTestApp() : Promise<INestApplication> {
-    const moduleRef = await  Test.createTestingModule({
-        imports: [AppModule],
-    }).compile();
-    const app = moduleRef.createNestApplication();
-    app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
-    app.setGlobalPrefix("api");
-    await app.init();
-    return app;
+export async function createTestApp(): Promise<INestApplication> {
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+  })
+    .overrideProvider(APP_GUARD)
+    .useValue({ canActivate: () => true })
+    .overrideGuard(ThrottlerGuard)
+    .useValue({ canActivate: () => true })
+    .overrideProvider(PrismaService)
+    .useValue(testDb)
+    .compile();
+
+  const app = moduleRef.createNestApplication();
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.setGlobalPrefix("api");
+  await app.init();
+  return app;
 }

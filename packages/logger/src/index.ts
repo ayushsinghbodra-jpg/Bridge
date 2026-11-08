@@ -50,7 +50,14 @@ export class Logger {
 
   private write(level: LogLevel, message: string, meta: unknown[]): void {
     const timestamp = new Date().toISOString();
-    const tag = this.context ? `[${this.context}]` : '';
-    console.log(`${timestamp} [${level.toUpperCase()}] ${tag} ${message}`, ...meta);
+    const prefix = this.context
+      ? `${timestamp} [${level.toUpperCase()}] [${this.context}]`
+      : `${timestamp} [${level.toUpperCase()}]`;
+
+    if (meta.length > 0) {
+      console.log(prefix, message, ...meta);
+    } else {
+      console.log(prefix, message);
+    }
   }
 }
